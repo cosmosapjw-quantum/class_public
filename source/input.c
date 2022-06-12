@@ -2672,6 +2672,22 @@ int input_read_parameters_species(struct file_content * pfc,
 
 
   /* 7) ** ADDITIONAL SPECIES ** --> Add your species here */
+  
+  // added scalar mass here #mod
+  /* Read */
+  class_call(parser_read_double(pfc,"scalmass",&param1,&flag1,errmsg),
+             errmsg,
+             errmsg);
+  /* Complete set of parameters */
+  ppt->scalmass = param1;
+  // added inverse of BD coupling constant
+  /* Read */
+  class_call(parser_read_double(pfc,"inv_bd_omega",&param1,&flag1,errmsg),
+             errmsg,
+             errmsg);
+  /* Complete set of parameters */
+  ppt->inv_bd_omega = param1;
+  // ok
 
   /** 7.1) Decaying DM into DR */
   /** 7.1.a) Omega_0_dcdmdr (DCDM, i.e. decaying CDM) */

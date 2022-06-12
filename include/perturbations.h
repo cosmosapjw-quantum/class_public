@@ -102,6 +102,11 @@ struct perturbations
    *  'thermodynamics' structures) */
 
   //@{
+  
+  // free parameters #mod
+  double scalmass; // scalar field mass
+  double inv_bd_omega; // inverse of BD coupling constant
+  // ok
 
   short has_perturbations; /**< do we need to compute perturbations at all ? */
 
@@ -250,7 +255,7 @@ struct perturbations
   short has_source_theta_tot;  /**< do we need source for theta total? */
   short has_source_theta_g;    /**< do we need source for theta of gammas? */
   short has_source_theta_b;    /**< do we need source for theta of baryons? */
-  short has_source_theta_cdm;  /**< do we need source for theta of cold dark matter? */
+  short has_source_theta_cdm;  /**< do we need source for theta of cold dark matter? */  
   short has_source_theta_idm;  /**< do we need source for theta of interacting dark matter */
   short has_source_theta_idr;  /**< do we need source for theta of interacting dark radiation? */
   short has_source_theta_dcdm; /**< do we need source for theta of DCDM? */
@@ -302,6 +307,12 @@ struct perturbations
   int index_tp_theta_g;     /**< index value for theta of gammas */
   int index_tp_theta_b;     /**< index value for theta of baryons */
   int index_tp_theta_cdm;   /**< index value for theta of cold dark matter */
+  
+  // scalar field vars #mod
+  int index_tp_weylscal; // weyl scalar field
+  int index_tp_weylscal_prime; // weyl scalar field time derivative
+  // ok
+  
   int index_tp_theta_dcdm;  /**< index value for theta of DCDM */
   int index_tp_theta_fld;   /**< index value for theta of dark energy */
   int index_tp_theta_scf;   /**< index value for theta of scalar field */
@@ -466,6 +477,12 @@ struct perturbations_vector
   int index_pt_theta_b;   /**< baryon velocity */
   int index_pt_delta_cdm; /**< cdm density */
   int index_pt_theta_cdm; /**< cdm velocity */
+  
+  // scalar field vars #mod
+  int index_pt_weylscal; // weyl scalar field
+  int index_pt_weylscal_prime; // weyl scalar field time derivative
+  // ok
+  
   int index_pt_delta_idm; /**< idm density */
   int index_pt_theta_idm; /**< idm velocity */
   int index_pt_delta_dcdm; /**< dcdm density */

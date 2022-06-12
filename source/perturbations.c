@@ -461,7 +461,10 @@ int perturbations_output_data(
       /* indices for species associated with a velocity transfer function in Fourier space */
 
       if (output_format == class_format) {
-
+        // weyl scalar field #mod
+        class_store_double(dataptr,tk[ppt->index_tp_weylscal],_TRUE_,storeidx);
+        class_store_double(dataptr,tk[ppt->index_tp_weylscal_prime],_TRUE_,storeidx);
+        // ok
         if (ppt->has_density_transfers == _TRUE_) {
           class_store_double(dataptr,tk[ppt->index_tp_delta_g],ppt->has_source_delta_g,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_delta_b],ppt->has_source_delta_b,storeidx);
@@ -550,6 +553,10 @@ int perturbations_output_titles(
 
   if (output_format == class_format) {
     class_store_columntitle(titles,"k (h/Mpc)",_TRUE_);
+    // weyl scalar field #mod
+    class_store_columntitle(titles,"weylscal",_TRUE_);
+    class_store_columntitle(titles,"weylscal_dot",_TRUE_);
+    // ok
     if (ppt->has_density_transfers == _TRUE_) {
       class_store_columntitle(titles,"d_g",_TRUE_);
       class_store_columntitle(titles,"d_b",_TRUE_);
@@ -1519,6 +1526,12 @@ int perturbations_indices(
       class_define_index(ppt->index_tp_theta_g,    ppt->has_source_theta_g,   index_type,1);
       class_define_index(ppt->index_tp_theta_b,    ppt->has_source_theta_b,   index_type,1);
       class_define_index(ppt->index_tp_theta_cdm,  ppt->has_source_theta_cdm, index_type,1);
+      
+      // weyl scalar field #mod
+      class_define_index(ppt->index_tp_weylscal,   _TRUE_, index_type,1);
+      class_define_index(ppt->index_tp_weylscal_prime, _TRUE_, index_type,1);
+      // ok
+      
       class_define_index(ppt->index_tp_theta_idm,  ppt->has_source_theta_idm, index_type,1);
       class_define_index(ppt->index_tp_theta_dcdm, ppt->has_source_theta_dcdm,index_type,1);
       class_define_index(ppt->index_tp_theta_fld,  ppt->has_source_theta_fld, index_type,1);
@@ -3421,6 +3434,12 @@ int perturbations_prepare_k_output(struct background * pba,
       /* Cold dark matter */
       class_store_columntitle(ppt->scalar_titles,"delta_cdm",pba->has_cdm);
       class_store_columntitle(ppt->scalar_titles,"theta_cdm",pba->has_cdm);
+      
+      // weyl scalar field #mod
+      class_store_columntitle(ppt->scalar_titles,"weylscal",_TRUE_);
+      class_store_columntitle(ppt->scalar_titles,"weylscal_dot",_TRUE_);
+      // ok
+      
       /* Interacting dark matter */
       class_store_columntitle(ppt->scalar_titles,"delta_idm",pba->has_idm);
       class_store_columntitle(ppt->scalar_titles,"theta_idm",pba->has_idm);
@@ -4010,6 +4029,11 @@ int perturbations_vector_init(
 
     class_define_index(ppv->index_pt_delta_cdm,pba->has_cdm,index_pt,1); /* cdm density */
     class_define_index(ppv->index_pt_theta_cdm,pba->has_cdm && (ppt->gauge == newtonian),index_pt,1); /* cdm velocity */
+    
+    // weyl scalar field #mod
+    class_define_index(ppv->index_pt_weylscal,   _TRUE_, index_pt,1); // weyl scalar field
+    class_define_index(ppv->index_pt_weylscal_prime, _TRUE_, index_pt,1); // weyl scalar field time derivative
+    // ok
 
     /* idm */
     class_define_index(ppv->index_pt_delta_idm,pba->has_idm,index_pt,1); /* idm density */
@@ -5514,6 +5538,10 @@ int perturbations_initial_conditions(struct precision * ppr,
          set to ppr->curvature_ini at leading order.  Factors s2
          appear through the solution of Einstein equations and
          equations of motion. */
+         
+        // initial values #mod
+        ppw->pv->y[ppw->pv->index_pt_weylscal] = log(a);
+        ppw->pv->y[ppw->pv->index_pt_weylscal_prime] = a_prime_over_a;
 
       /* photon density */
       ppw->pv->y[ppw->pv->index_pt_delta_g] = - ktau_two/3. * (1.-om*tau/5.)
@@ -6820,6 +6848,10 @@ int perturbations_total_stress_energy(
   double X, Y, Z, X_prime, Y_prime, Z_prime;
   double Gamma_fld, S, S_prime, theta_t, theta_t_prime, rho_plus_p_theta_fld_prime;
   double delta_p_b_over_rho_b;
+  // new variables #mod
+  // scalar field perturbation
+  double weylscal=0., weylscal_prime=0., aprx=0., aprx_prime=0.;
+  // 
 
   /** - wavenumber and scale factor related quantities */
 
@@ -7193,6 +7225,20 @@ int perturbations_total_stress_energy(
     }
 
     /* add your extra species here */
+    
+      // weyl scalar field #mod
+      aprx = y[ppw->pv->index_pt_weylscal];
+      aprx_prime = y[ppw->pv->index_pt_weylscal_prime];
+
+      weylscal = sqrt(2*ppt->inv_bd_omega)*exp(y[ppw->pv->index_pt_weylscal])/a;
+      weylscal_prime = sqrt(2*ppt->inv_bd_omega)*(y[ppw->pv->index_pt_weylscal_prime]-a_prime_over_a)*exp(y[ppw->pv->index_pt_weylscal])/a;
+      // 
+
+      ppw->delta_rho += 0;
+      ppw->delta_p += 0;
+      ppw->rho_plus_p_tot += 0;
+      ppw->rho_plus_p_theta += 0;
+      ppw->rho_plus_p_shear += 0;
 
     /* fluid contribution */
     if (pba->has_fld == _TRUE_) {
@@ -8159,6 +8205,10 @@ int perturbations_print_variables(double tau,
   double a,a2,H;
   int idx,index_q, storeidx;
   double *dataptr;
+  
+  // new variables #mod
+  double weylscal=0., weylscal_prime=0., aprx=0., aprx_prime=0., a_prime_over_a;
+  // end of added code
 
 
   /** - rename structure fields (just to avoid heavy notations) */
@@ -8316,6 +8366,14 @@ int perturbations_print_variables(double tau,
         theta_cdm = y[ppw->pv->index_pt_theta_cdm];
       }
     }
+    
+    // weyl scalar field #mod
+    a_prime_over_a = pvecback[pba->index_bg_H] * a;
+    aprx = y[ppw->pv->index_pt_weylscal];
+    aprx_prime = y[ppw->pv->index_pt_weylscal_prime];
+
+    weylscal = sqrt(2*ppt->inv_bd_omega)*exp(y[ppw->pv->index_pt_weylscal])/a;
+    weylscal_prime = sqrt(2*ppt->inv_bd_omega)*(y[ppw->pv->index_pt_weylscal_prime]-a_prime_over_a)*exp(y[ppw->pv->index_pt_weylscal])/a;
 
     if (pba->has_idm == _TRUE_) {
       delta_idm = y[ppw->pv->index_pt_delta_idm];
@@ -8534,6 +8592,9 @@ int perturbations_print_variables(double tau,
     /* Cold dark matter */
     class_store_double(dataptr, delta_cdm, pba->has_cdm, storeidx);
     class_store_double(dataptr, theta_cdm, pba->has_cdm, storeidx);
+    // weyl scalar field #mod
+    class_store_double(dataptr, weylscal, _TRUE_, storeidx);
+    class_store_double(dataptr, weylscal_prime, _TRUE_, storeidx);
     /* Interacting dark matter */
     class_store_double(dataptr, delta_idm, pba->has_idm, storeidx);
     class_store_double(dataptr, theta_idm, pba->has_idm, storeidx);
@@ -8787,6 +8848,15 @@ int perturbations_derivs(double tau,
 
   /* for use with dcdm and dr */
   double f_dr, fprime_dr;
+  
+  // new variables #mod
+  double weylscal=0., weylscal_prime=0.;
+  double aprx=0., aprx_prime=0., aprx_prime_prime=0.;
+  // scalar mass in planck unit
+  double scalmass_conv;
+  // a''/a
+  double a_primeprime_over_a;
+  // end of added code
 
   /** - rename the fields of the input structure (just to avoid heavy notations) */
 
@@ -9231,6 +9301,17 @@ int perturbations_derivs(double tau,
         dy[pv->index_pt_delta_cdm] = -metric_continuity; /* cdm density */
       }
     }
+    
+    // weyl field equation of motion #mod
+    scalmass_conv = ppt->scalmass;
+    a_primeprime_over_a = pvecback[pba->index_bg_H_prime] * pvecback[pba->index_bg_a]
+      + 2. * a_prime_over_a * a_prime_over_a;
+    aprx = y[pv->index_pt_weylscal];
+    aprx_prime = y[pv->index_pt_weylscal_prime];
+    aprx_prime_prime = a_primeprime_over_a -k2 -a2*scalmass_conv*scalmass_conv;
+    dy[pv->index_pt_weylscal_prime] = aprx_prime_prime;
+    dy[pv->index_pt_weylscal] = aprx_prime;
+    // 
 
     /** - ---> interacting dark radiation */
     if (pba->has_idr == _TRUE_){
