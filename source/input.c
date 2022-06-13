@@ -2673,13 +2673,13 @@ int input_read_parameters_species(struct file_content * pfc,
 
   /* 7) ** ADDITIONAL SPECIES ** --> Add your species here */
   
-  // added scalar mass here #mod
+  // added scalar field potential scale here #mod
   /* Read */
-  class_call(parser_read_double(pfc,"scalmass",&param1,&flag1,errmsg),
+  class_call(parser_read_double(pfc,"potscale",&param1,&flag1,errmsg),
              errmsg,
              errmsg);
   /* Complete set of parameters */
-  ppt->scalmass = param1;
+  ppt->potscale = param1;
   // added inverse of BD coupling constant
   /* Read */
   class_call(parser_read_double(pfc,"inv_bd_omega",&param1,&flag1,errmsg),
@@ -4086,9 +4086,11 @@ int input_read_parameters_primordial(struct file_content * pfc,
       /* Complete set of parameters */
       if (flag1 == _TRUE_){
         ppm->A_s = param1;
+        ppt->A_s = param1;
       }
       else if (flag2 == _TRUE_){
         ppm->A_s = exp(param2)*1.e-10;
+        ppt->A_s = exp(param2)*1.e-10;
       }
 
       /** 1.b.1.1) Adiabatic perturbations */
@@ -4179,6 +4181,7 @@ int input_read_parameters_primordial(struct file_content * pfc,
     if (ppt->has_tensors == _TRUE_){
       /* Read */
       class_read_double("r",ppm->r);
+      class_read_double("r",ppt->r);
       if (ppt->has_scalars == _FALSE_){
         class_read_double("A_s",ppm->A_s);
       }

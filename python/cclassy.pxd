@@ -170,6 +170,10 @@ cdef extern from "class.h":
         int number_of_tensor_titles
         int index_md_scalars
 
+        # added free parameters #mod
+        double potscale
+        double inv_bd_omega
+
         double * scalar_perturbations_data[_MAX_NUMBER_OF_K_FILES_]
         double * vector_perturbations_data[_MAX_NUMBER_OF_K_FILES_]
         double * tensor_perturbations_data[_MAX_NUMBER_OF_K_FILES_]
@@ -267,6 +271,9 @@ cdef extern from "class.h":
         int index_tp_H_T_Nb_prime
         int index_tp_k2gamma_Nb
 
+        # added my species #mod
+        int index_tp_weylscal
+        int index_tp_weylscal_prime
 
         double *** sources
         double * tau_sampling

@@ -104,8 +104,10 @@ struct perturbations
   //@{
   
   // free parameters #mod
-  double scalmass; // scalar field mass
+  double potscale; // scalar field potential scale, V*M^2_P in Mpc^-2
   double inv_bd_omega; // inverse of BD coupling constant
+  double A_s; // scalar amp (auxiliary)
+  double r; // tensor-to-scalar ratio
   // ok
 
   short has_perturbations; /**< do we need to compute perturbations at all ? */
