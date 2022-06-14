@@ -5540,8 +5540,8 @@ int perturbations_initial_conditions(struct precision * ppr,
          equations of motion. */
          
         // initial values #mod
-        ppw->pv->y[ppw->pv->index_pt_weylscal] = sqrt(2.*ppt->inv_bd_omega);//log(a);
-        ppw->pv->y[ppw->pv->index_pt_weylscal_prime] = 0.;//a_prime_over_a;
+        ppw->pv->y[ppw->pv->index_pt_weylscal] = sqrt(2.*ppt->inv_bd_omega);
+        ppw->pv->y[ppw->pv->index_pt_weylscal_prime] = 0.;
 
       /* photon density */
       ppw->pv->y[ppw->pv->index_pt_delta_g] = - ktau_two/3. * (1.-om*tau/5.)
@@ -9311,9 +9311,17 @@ int perturbations_derivs(double tau,
       + 2. * a_prime_over_a * a_prime_over_a;
     aprx = y[pv->index_pt_weylscal];
     aprx_prime = y[pv->index_pt_weylscal_prime];
-    aprx_prime_prime = -2.*aprx_prime - (k*k + a2*pot_conv)*aprx;//a_primeprime_over_a -k2 -a2*pot_conv;
-    dy[pv->index_pt_weylscal_prime] = aprx_prime_prime;
-    dy[pv->index_pt_weylscal] = aprx_prime;
+    if ( 10.*aprx > sqrt(2.*ppt->inv_bd_omega) )
+    {
+      aprx_prime_prime = -2.*a_prime_over_a*aprx_prime - (k*k + a2*pot_conv)*aprx;
+      dy[pv->index_pt_weylscal_prime] = aprx_prime_prime;
+      dy[pv->index_pt_weylscal] = aprx_prime;
+    }
+    else
+    {
+      dy[pv->index_pt_weylscal_prime] = -2.*a_prime_over_a*aprx_prime;
+      dy[pv->index_pt_weylscal] = aprx_prime;
+    }
     // 
 
     /** - ---> interacting dark radiation */
