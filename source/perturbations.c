@@ -461,10 +461,6 @@ int perturbations_output_data(
       /* indices for species associated with a velocity transfer function in Fourier space */
 
       if (output_format == class_format) {
-        // weyl scalar field #mod
-        class_store_double(dataptr,tk[ppt->index_tp_weylscal],_TRUE_,storeidx);
-        class_store_double(dataptr,tk[ppt->index_tp_weylscal_prime],_TRUE_,storeidx);
-        // ok
         if (ppt->has_density_transfers == _TRUE_) {
           class_store_double(dataptr,tk[ppt->index_tp_delta_g],ppt->has_source_delta_g,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_delta_b],ppt->has_source_delta_b,storeidx);
@@ -498,6 +494,10 @@ int perturbations_output_data(
           class_store_double(dataptr,tk[ppt->index_tp_theta_g],ppt->has_source_theta_g,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_theta_b],ppt->has_source_theta_b,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_theta_cdm],ppt->has_source_theta_cdm,storeidx);
+          // weyl scalar field #mod
+          class_store_double(dataptr,tk[ppt->index_tp_weylscal],_TRUE_,storeidx);
+          class_store_double(dataptr,tk[ppt->index_tp_weylscal_prime],_TRUE_,storeidx);
+          // ok
           class_store_double(dataptr,tk[ppt->index_tp_theta_idm],ppt->has_source_theta_idm,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_theta_fld],ppt->has_source_theta_fld,storeidx);
           class_store_double(dataptr,tk[ppt->index_tp_theta_ur],ppt->has_source_theta_ur,storeidx);
@@ -553,10 +553,6 @@ int perturbations_output_titles(
 
   if (output_format == class_format) {
     class_store_columntitle(titles,"k (h/Mpc)",_TRUE_);
-    // weyl scalar field #mod
-    class_store_columntitle(titles,"weylscal",_TRUE_);
-    class_store_columntitle(titles,"weylscal_dot",_TRUE_);
-    // ok
     if (ppt->has_density_transfers == _TRUE_) {
       class_store_columntitle(titles,"d_g",_TRUE_);
       class_store_columntitle(titles,"d_b",_TRUE_);
@@ -5539,9 +5535,9 @@ int perturbations_initial_conditions(struct precision * ppr,
          appear through the solution of Einstein equations and
          equations of motion. */
          
-        // initial values #mod
-        ppw->pv->y[ppw->pv->index_pt_weylscal] = sqrt(2.*ppt->inv_bd_omega);
-        ppw->pv->y[ppw->pv->index_pt_weylscal_prime] = 0.;
+      // initial values #mod
+      ppw->pv->y[ppw->pv->index_pt_weylscal] = sqrt(2.);
+      ppw->pv->y[ppw->pv->index_pt_weylscal_prime] = 0.;
 
       /* photon density */
       ppw->pv->y[ppw->pv->index_pt_delta_g] = - ktau_two/3. * (1.-om*tau/5.)
@@ -6851,7 +6847,7 @@ int perturbations_total_stress_energy(
   // new variables #mod
   // scalar field perturbation
   double weylscal=0., weylscal_prime=0., aprx=0., aprx_prime=0.;
-  double const_pi=3.1415926535897932384626433832795, massratio;
+  double const_pi=3.1415926535897932384626433832795, massratio, pot_conv;
   // 
 
   /** - wavenumber and scale factor related quantities */
@@ -7231,14 +7227,14 @@ int perturbations_total_stress_energy(
       aprx = y[ppw->pv->index_pt_weylscal];
       aprx_prime = y[ppw->pv->index_pt_weylscal_prime];
 
-      weylscal = aprx;//sqrt(2*ppt->inv_bd_omega)*exp(aprx)/a;
-      weylscal_prime = aprx_prime;//sqrt(2*ppt->inv_bd_omega)*(aprx_prime-a_prime_over_a)*exp(aprx)/a;
+      weylscal = aprx;
+      weylscal_prime = aprx_prime;
       // 
 
-      massratio = 4*ppt->potscale/(4.*const_pi*const_pi*ppt->A_s*ppt->r);
+      massratio = pot_conv*pot_conv/(3*1e-6)/(3*1e-6); //(4.*const_pi*const_pi*ppt->A_s*ppt->r);
 
       ppw->delta_rho += massratio*weylscal*ppw->pvecback[pba->index_bg_rho_tot] - (2.-massratio)*(3.*a_prime_over_a*weylscal_prime+k2*weylscal);
-      ppw->delta_p += massratio*weylscal*ppw->pvecback[pba->index_bg_p_tot] - (2.-massratio)*(k2*weylscal-ppt->potscale*weylscal);;
+      ppw->delta_p += massratio*weylscal*ppw->pvecback[pba->index_bg_p_tot] - (2.-massratio)*(k2*weylscal-pot_conv*weylscal);
       ppw->rho_plus_p_tot += 0;
       ppw->rho_plus_p_theta += k*(weylscal_prime-3.*a_prime_over_a*weylscal);
       ppw->rho_plus_p_shear += k2*weylscal;
@@ -8375,8 +8371,8 @@ int perturbations_print_variables(double tau,
     aprx = y[ppw->pv->index_pt_weylscal];
     aprx_prime = y[ppw->pv->index_pt_weylscal_prime];
 
-    weylscal = aprx;//sqrt(2*ppt->inv_bd_omega)*exp(aprx)/a;
-    weylscal_prime = aprx_prime;//sqrt(2*ppt->inv_bd_omega)*(aprx_prime-a_prime_over_a)*exp(aprx)/a;
+    weylscal = aprx;
+    weylscal_prime = aprx_prime;
 
     if (pba->has_idm == _TRUE_) {
       delta_idm = y[ppw->pv->index_pt_delta_idm];
@@ -9306,23 +9302,28 @@ int perturbations_derivs(double tau,
     }
     
     // weyl field equation of motion #mod
-    pot_conv = 4.*ppt->potscale;
-    a_primeprime_over_a = pvecback[pba->index_bg_H_prime] * pvecback[pba->index_bg_a]
+    pot_conv = ppt->potscale;
+    a_primeprime_over_a = pvecback[pba->index_bg_H_prime] * a
       + 2. * a_prime_over_a * a_prime_over_a;
     aprx = y[pv->index_pt_weylscal];
     aprx_prime = y[pv->index_pt_weylscal_prime];
-    if ( 10.*aprx > sqrt(2.*ppt->inv_bd_omega) )
-    {
-      aprx_prime_prime = -2.*a_prime_over_a*aprx_prime - (k*k + a2*pot_conv)*aprx;
-      dy[pv->index_pt_weylscal_prime] = aprx_prime_prime;
-      dy[pv->index_pt_weylscal] = aprx_prime;
-    }
-    else
-    {
-      dy[pv->index_pt_weylscal_prime] = -2.*a_prime_over_a*aprx_prime;
-      dy[pv->index_pt_weylscal] = aprx_prime;
-    }
-    // 
+
+    aprx_prime_prime = -2.*a_prime_over_a*aprx_prime - (k*k + a2*pot_conv*pot_conv)*aprx;
+    //a_primeprime_over_a;//-(k*k + a*a*ppt->potscale);
+    dy[pv->index_pt_weylscal_prime] = aprx_prime_prime;
+    dy[pv->index_pt_weylscal] = aprx_prime;
+    // if ( 10.*aprx > sqrt(2.*ppt->inv_bd_omega) )
+    // {
+    //   aprx_prime_prime = -2.*a_prime_over_a*aprx_prime - (k*k + a2*pot_conv)*aprx;
+    //   dy[pv->index_pt_weylscal_prime] = aprx_prime_prime;
+    //   dy[pv->index_pt_weylscal] = aprx_prime;
+    // }
+    // else
+    // {
+    //   dy[pv->index_pt_weylscal_prime] = -2.*a_prime_over_a*aprx_prime;
+    //   dy[pv->index_pt_weylscal] = aprx_prime;
+    // }
+    // // 
 
     /** - ---> interacting dark radiation */
     if (pba->has_idr == _TRUE_){
