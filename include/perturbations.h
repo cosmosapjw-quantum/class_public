@@ -11,6 +11,14 @@
 
 #define _set_source_(index) ppt->sources[index_md][index_ic * ppt->tp_size[index_md] + index][index_tau * ppt->k_size[index_md] + index_k]
 
+// numerical factors for modification #mod
+// copied from background.h file
+#define _Mpc_over_m_ 3.085677581282e22  /**< conversion factor from meters to megaparsecs */
+/* remark: CAMB uses 3.085678e22: good to know if you want to compare  with high accuracy */
+#define _c_ 2.99792458e8            /**< c in m/s */
+#define _G_ 6.67428e-11             /**< Newton constant in m^3/Kg/s^2 */
+#define _eV_ 1.602176487e-19        /**< 1 eV expressed in J */
+
 /**
  * flags for various approximation schemes
  * (tca = tight-coupling approximation,
@@ -104,8 +112,7 @@ struct perturbations
   //@{
   
   // free parameters #mod
-  double potscale; // scalar field potential scale, V*M^2_P in Mpc^-2
-  double inv_bd_omega; // inverse of BD coupling constant
+  double scalmass; // scalar field mass, in Planck unit
   double A_s; // scalar amp (auxiliary)
   double r; // tensor-to-scalar ratio
   // ok

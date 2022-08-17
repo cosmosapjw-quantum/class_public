@@ -2675,19 +2675,11 @@ int input_read_parameters_species(struct file_content * pfc,
   
   // added scalar field potential scale here #mod
   /* Read */
-  class_call(parser_read_double(pfc,"potscale",&param1,&flag1,errmsg),
+  class_call(parser_read_double(pfc,"scalmass",&param1,&flag1,errmsg),
              errmsg,
              errmsg);
   /* Complete set of parameters */
-  ppt->potscale = param1;
-  // added inverse of BD coupling constant
-  /* Read */
-  class_call(parser_read_double(pfc,"inv_bd_omega",&param1,&flag1,errmsg),
-             errmsg,
-             errmsg);
-  /* Complete set of parameters */
-  ppt->inv_bd_omega = param1;
-  // ok
+  ppt->scalmass = param1;
 
   /** 7.1) Decaying DM into DR */
   /** 7.1.a) Omega_0_dcdmdr (DCDM, i.e. decaying CDM) */

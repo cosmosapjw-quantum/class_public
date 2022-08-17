@@ -5536,8 +5536,8 @@ int perturbations_initial_conditions(struct precision * ppr,
          equations of motion. */
          
       // initial values #mod
-      ppw->pv->y[ppw->pv->index_pt_weylscal] = sqrt(2.);
-      ppw->pv->y[ppw->pv->index_pt_weylscal_prime] = 0.;
+      ppw->pv->y[ppw->pv->index_pt_weylscal] = 0;
+      ppw->pv->y[ppw->pv->index_pt_weylscal_prime] = 0;
 
       /* photon density */
       ppw->pv->y[ppw->pv->index_pt_delta_g] = - ktau_two/3. * (1.-om*tau/5.)
@@ -6847,7 +6847,7 @@ int perturbations_total_stress_energy(
   // new variables #mod
   // scalar field perturbation
   double weylscal=0., weylscal_prime=0., aprx=0., aprx_prime=0.;
-  double const_pi=3.1415926535897932384626433832795, massratio, pot_conv;
+  double massratio, kappa, Planck_mass, scalmass_in_Planck;
   // 
 
   /** - wavenumber and scale factor related quantities */
@@ -7229,9 +7229,11 @@ int perturbations_total_stress_energy(
 
       weylscal = aprx;
       weylscal_prime = aprx_prime;
-      // 
-
-      massratio = pot_conv*pot_conv/(3*1e-6)/(3*1e-6); //(4.*const_pi*const_pi*ppt->A_s*ppt->r);
+      //
+      kappa = 8.*_PI_*_G_/3./pow(_c_,2)*_Mpc_over_m_;
+      Planck_mass = sqrt(2./kappa);
+      scalmass_in_Planck = ppt->scalmass*Planck_mass;
+      massratio = 4.*ppt->scalmass*ppt->scalmass/(_PI_*ppt->A_s*ppt->r);
 
       ppw->delta_rho += massratio*weylscal*ppw->pvecback[pba->index_bg_rho_tot] - (2.-massratio)*(3.*a_prime_over_a*weylscal_prime+k2*weylscal);
       ppw->delta_p += massratio*weylscal*ppw->pvecback[pba->index_bg_p_tot] - (2.-massratio)*(k2*weylscal-pot_conv*weylscal);
@@ -8852,9 +8854,7 @@ int perturbations_derivs(double tau,
   double weylscal=0., weylscal_prime=0.;
   double aprx=0., aprx_prime=0., aprx_prime_prime=0.;
   // scalar potential in planck unit
-  double pot_conv;
-  // a''/a
-  double a_primeprime_over_a;
+  double kappa, Planck_mass, scalmass_in_Planck, massratio;
   // end of added code
 
   /** - rename the fields of the input structure (just to avoid heavy notations) */
@@ -9302,28 +9302,20 @@ int perturbations_derivs(double tau,
     }
     
     // weyl field equation of motion #mod
-    pot_conv = ppt->potscale;
-    a_primeprime_over_a = pvecback[pba->index_bg_H_prime] * a
-      + 2. * a_prime_over_a * a_prime_over_a;
+    kappa = 8.*_PI_*_G_/3./pow(_c_,2)*_Mpc_over_m_;
+    Planck_mass = sqrt(2./kappa);
+    scalmass_in_Planck = ppt->scalmass*Planck_mass;
+    massratio = 4.*ppt->scalmass*ppt->scalmass/(_PI_*ppt->A_s*ppt->r);
     aprx = y[pv->index_pt_weylscal];
     aprx_prime = y[pv->index_pt_weylscal_prime];
 
-    aprx_prime_prime = -2.*a_prime_over_a*aprx_prime - (k*k + a2*pot_conv*pot_conv)*aprx;
-    //a_primeprime_over_a;//-(k*k + a*a*ppt->potscale);
+    aprx_prime_prime = -2.*a_prime_over_a*aprx_prime
+      -(k*k +
+        a2*(scalmass_in_Planck*scalmass_in_Planck-massratio*(ppw->pvecback[pba->index_bg_rho_tot]+3.*ppw->pvecback[pba->index_bg_p_tot]))
+       )
+      *aprx;
     dy[pv->index_pt_weylscal_prime] = aprx_prime_prime;
     dy[pv->index_pt_weylscal] = aprx_prime;
-    // if ( 10.*aprx > sqrt(2.*ppt->inv_bd_omega) )
-    // {
-    //   aprx_prime_prime = -2.*a_prime_over_a*aprx_prime - (k*k + a2*pot_conv)*aprx;
-    //   dy[pv->index_pt_weylscal_prime] = aprx_prime_prime;
-    //   dy[pv->index_pt_weylscal] = aprx_prime;
-    // }
-    // else
-    // {
-    //   dy[pv->index_pt_weylscal_prime] = -2.*a_prime_over_a*aprx_prime;
-    //   dy[pv->index_pt_weylscal] = aprx_prime;
-    // }
-    // // 
 
     /** - ---> interacting dark radiation */
     if (pba->has_idr == _TRUE_){

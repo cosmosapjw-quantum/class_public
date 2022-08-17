@@ -171,8 +171,7 @@ cdef extern from "class.h":
         int index_md_scalars
 
         # added free parameters #mod
-        double potscale
-        double inv_bd_omega
+        double scalmass
 
         double * scalar_perturbations_data[_MAX_NUMBER_OF_K_FILES_]
         double * vector_perturbations_data[_MAX_NUMBER_OF_K_FILES_]
