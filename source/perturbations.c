@@ -7235,8 +7235,12 @@ int perturbations_total_stress_energy(
       scalmass_in_Planck = ppt->scalmass*Planck_mass;
       massratio = 4.*ppt->scalmass*ppt->scalmass/(_PI_*ppt->A_s*ppt->r);
 
-      ppw->delta_rho += massratio*weylscal*ppw->pvecback[pba->index_bg_rho_tot] - (2.-massratio)*(3.*a_prime_over_a*weylscal_prime+k2*weylscal);
-      ppw->delta_p += massratio*weylscal*ppw->pvecback[pba->index_bg_p_tot] - (2.-massratio)*(k2*weylscal-pot_conv*weylscal);
+      ppw->delta_rho += massratio*weylscal*ppw->pvecback[pba->index_bg_rho_tot]
+        -(1.-massratio)*(3.*a_prime_over_a*weylscal_prime+k2*weylscal);
+      ppw->delta_p += massratio*weylscal*ppw->pvecback[pba->index_bg_p_tot]
+        -(1.-massratio)*(k2*weylscal
+                        -a2*(scalmass_in_Planck*scalmass_in_Planck-massratio*(ppw->pvecback[pba->index_bg_rho_tot]+3.*ppw->pvecback[pba->index_bg_p_tot])
+                            )*weylscal);
       ppw->rho_plus_p_tot += 0;
       ppw->rho_plus_p_theta += k*(weylscal_prime-3.*a_prime_over_a*weylscal);
       ppw->rho_plus_p_shear += k2*weylscal;
@@ -9311,9 +9315,9 @@ int perturbations_derivs(double tau,
 
     aprx_prime_prime = -2.*a_prime_over_a*aprx_prime
       -(k*k +
-        a2*(scalmass_in_Planck*scalmass_in_Planck-massratio*(ppw->pvecback[pba->index_bg_rho_tot]+3.*ppw->pvecback[pba->index_bg_p_tot]))
-       )
-      *aprx;
+        a2*(scalmass_in_Planck*scalmass_in_Planck*aprx
+            -massratio*(ppw->pvecback[pba->index_bg_rho_tot]+3.*ppw->pvecback[pba->index_bg_p_tot]))
+       );
     dy[pv->index_pt_weylscal_prime] = aprx_prime_prime;
     dy[pv->index_pt_weylscal] = aprx_prime;
 
